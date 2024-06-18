@@ -2,8 +2,8 @@ import sys
 from monitor import Monitor
 from rgb import RgbClient, RgbServer
 
-rgb_server = RgbServer()
-rgb_server.start()
+
+
 
 def main():
     rgb_client = RgbClient()
@@ -16,12 +16,12 @@ def main():
     match sys.argv[1]:
         case "-n":
             print("Night mode")
-            monitor.night_mode()
+            monitor._set_brightness()
             rgb_client.clear_devices_lighting()
 
         case "-l":
             print("Light mode")
-            monitor.light_mode()
+            monitor._set_light_theme()
             rgb_client.reset_lights()
 
 

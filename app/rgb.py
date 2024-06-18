@@ -1,36 +1,38 @@
 from subprocess import Popen, PIPE, TimeoutExpired
 from pathlib import Path
 from openrgb import OpenRGBClient
-from config.config import PATH_TO_OPEN_RGB_APP
-from decorators import singleton
+from app.config import SERVER_HOST, SERVER_PORT, APP_PATH
+from app.decorators import singleton
+from typing import Callable
 
 
 @singleton
 class RgbServer:
-    def __init__(self, path_to_open_rgb: Path = PATH_TO_OPEN_RGB_APP, ip: str = "127.0.0.1", port: int = 6742) -> None:
+    def __init__(self, path_to_open_rgb: Path = APP_PATH) -> None:
         self._path_to_open_rgb = path_to_open_rgb
         self.open_rgb_process: Popen | None = None
-        self.ip = ip
-        self.port = port
 
     def start(self) -> None:
+        return self._start()
+    
+    def _start(self):
         try:
             if self.open_rgb_process is not None:
-                self.open_rgb_process = Popen([self._path_to_open_rgb, "--server", "--ip", self.ip, "--port", self.port], stdout=PIPE, stderr=PIPE)
-
+                self.open_rgb_process = Popen(
+                [self._path_to_open_rgb, "--server", "--server-host", SERVER_HOST, "--server-port", SERVER_PORT],
+                stdout=PIPE, stderr=PIPE)
+                
         except (FileNotFoundError, OSError):
             print(f"OpenRGB file is not found! Check the path - {self._path_to_open_rgb}")
-
+        
         except TimeoutExpired:
             print(f"OpenRGB server is expired! Check if the server is launched.")
-
-        print("Server started.")
 
     def stop(self) -> None:
         self.open_rgb_process.kill()
         print("Server stopped.")
 
-    def autoexec(self, func):
+    def autoexec(self, func: Callable):
         def wrapper(*args, **kwargs) -> None:
             self.start()
             func(*args, **kwargs)
@@ -41,15 +43,18 @@ class RgbServer:
 
 
 class RgbClient:
-    def  __init__(self, ip: str = "127.0.0.1", port: int = 6742):
+    def connect(self) -> None:
+        return self._connect()
+
+    def _connect(self) -> None:
         try:
-            self._client = OpenRGBClient(address=ip, port=port)
+            self._client = OpenRGBClient(address=SERVER_HOST, port=SERVER_PORT)
         except TimeoutError:
             raise TimeoutError(
                 "Failed to connect to server. Please check your internet connection. Server can be also turned off.")
 
-    def reset_lights(self):
+    def reset_lights(self) -> None:
         ...
 
-    def clear_devices_lighting(self):
+    def clear_devices_lighting(self) -> None:
         self._client.clear()
