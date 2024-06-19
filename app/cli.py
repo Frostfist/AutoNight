@@ -1,8 +1,6 @@
 import sys
-from monitor import Monitor
-from rgb import RgbClient, RgbServer
-
-
+from app.core.rgb import RgbClient
+from app.core.devices import Monitor
 
 
 def main():
@@ -10,19 +8,25 @@ def main():
     monitor = Monitor()
 
     if len(sys.argv) < 2:
-        print("Usage: %s <solution file>" % sys.argv[0])
+        print("Our commands: \n\t -n - Dark mode\n\t -l - Light mode")
         sys.exit(1)
 
     match sys.argv[1]:
         case "-n":
-            print("Night mode")
-            monitor._set_brightness()
+            print("Dark mode")
+            monitor.dark_mode()
             rgb_client.clear_devices_lighting()
 
         case "-l":
             print("Light mode")
-            monitor._set_light_theme()
+            monitor.light_mode()
             rgb_client.reset_lights()
+
+        case "-c":
+            print(monitor.current_mode)
+
+        case "-t":
+            monitor.toggle()
 
 
 if __name__ == '__main__':

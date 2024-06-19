@@ -1,10 +1,10 @@
 from subprocess import Popen, PIPE, TimeoutExpired
 from pathlib import Path
 from openrgb import OpenRGBClient
-from app.config import SERVER_HOST, SERVER_PORT, APP_PATH
-from app.decorators import singleton
 from typing import Callable
 
+from app.config.config import SERVER_HOST, SERVER_PORT, APP_PATH
+from app.core.decorators import singleton
 
 @singleton
 class RgbServer:
@@ -14,17 +14,17 @@ class RgbServer:
 
     def start(self) -> None:
         return self._start()
-    
+
     def _start(self):
         try:
             if self.open_rgb_process is not None:
                 self.open_rgb_process = Popen(
-                [self._path_to_open_rgb, "--server", "--server-host", SERVER_HOST, "--server-port", SERVER_PORT],
-                stdout=PIPE, stderr=PIPE)
-                
+                    [self._path_to_open_rgb, "--server", "--server-host", SERVER_HOST, "--server-port", SERVER_PORT],
+                    stdout=PIPE, stderr=PIPE)
+
         except (FileNotFoundError, OSError):
             print(f"OpenRGB file is not found! Check the path - {self._path_to_open_rgb}")
-        
+
         except TimeoutExpired:
             print(f"OpenRGB server is expired! Check if the server is launched.")
 
@@ -48,7 +48,8 @@ class RgbClient:
 
     def _connect(self) -> None:
         try:
-            self._client = OpenRGBClient(address=SERVER_HOST, port=SERVER_PORT)
+            self._client: OpenRGBClient = OpenRGBClient(address=SERVER_HOST, port=SERVER_PORT)
+            self._client.connect()
         except TimeoutError:
             raise TimeoutError(
                 "Failed to connect to server. Please check your internet connection. Server can be also turned off.")
@@ -57,4 +58,7 @@ class RgbClient:
         ...
 
     def clear_devices_lighting(self) -> None:
-        self._client.clear()
+        try:
+            self._client.clear()
+        except AttributeError:
+            print("No devices available.")

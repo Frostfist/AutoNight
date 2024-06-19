@@ -1,7 +1,8 @@
 import screen_brightness_control as sbc
-from app.enums import Mode
 from screen_brightness_control.exceptions import ScreenBrightnessError, NoValidDisplayError
 
+from app.core.enums import Mode
+from app.core.theme_mode_decorator import ThemeModeDetector
 
 class Monitor:
     def __init__(self, min_brightness: int = 0, max_brightness: int = 50):
@@ -14,18 +15,30 @@ class Monitor:
         self._min_brightness: int = min_brightness
 
     @property
-    def current_state(self) -> Mode:
+    def current_mode(self) -> Mode:
+        """
+        :return: current mode
+        """
         return self._current_mode
 
-    def toggle(self, theme: Mode) -> None:
-        match theme:
-            case Mode.LIGHT:
-                self._light_mode()
-            case Mode.DARK:
-                self._dark_mode()
-
-    def _get_current_mode(self) -> Mode:
-        ...
+    def toggle(self) -> None:
+        """
+        Toggle modes.
+        :return: None
+        """
+        if self._current_mode == Mode.LIGHT:
+            self._dark_mode()
+        if self._current_mode == Mode.DARK:    
+            self._light_mode()
+        
+    @staticmethod
+    def _get_current_mode() -> Mode:
+        try:
+            detector = ThemeModeDetector()
+            return detector.get_theme_mode()
+        
+        except AttributeError:
+            print("Detector is not defined")
 
     def _dark_mode(self) -> None:
         self._current_mode = Mode.DARK
@@ -51,3 +64,9 @@ class Monitor:
             # logging
 
             return False
+
+    def light_mode(self):
+        return self._light_mode()
+
+    def dark_mode(self):
+        return self._dark_mode()
