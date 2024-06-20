@@ -28,7 +28,7 @@ class Monitor:
         """
         if self._current_mode == Mode.LIGHT:
             self._dark_mode()
-        if self._current_mode == Mode.DARK:    
+        if self._current_mode == Mode.DARK:
             self._light_mode()
         
     @staticmethod

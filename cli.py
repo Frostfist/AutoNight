@@ -12,7 +12,7 @@ def main():
         sys.exit(1)
 
     match sys.argv[1]:
-        case "-n":
+        case "-d":
             print("Dark mode")
             monitor.dark_mode()
             rgb_client.clear_devices_lighting()
